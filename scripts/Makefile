@@ -23,7 +23,7 @@ run:
 	@printf "${BLUE}■ Building docker images...${RESET}\n"
 	docker-compose -f $(COMPOSE_FILE) up --build --force-recreate -d
 	@printf "${CYAN}▼ Waiting for services to stabilize ▼${RESET}\n"
-	@timeout=60; \
+	@timeout=120; \
 	total=$$timeout; \
 	while ! curl -s ${LOCALHOST} >/dev/null; do \
 		if [ "$$timeout" -le 0 ]; then \
@@ -36,7 +36,7 @@ run:
 		sleep 2; \
 	done
 	@printf "\r${CYAN}[==============================] 100%%${RESET}\n"
-	@printf "${GREEN}✓ Services are now available at ${LOCALHOST}${RESET}\n"
+	@printf "${GREEN}✔ Services are now available at ${LOCALHOST}${RESET}\n"
 	
 build:
 	@printf "${BLUE}■ Building docker images...${RESET}\n"
@@ -45,17 +45,17 @@ build:
 up:
 	@printf "${GREEN}▶ Starting containers...${RESET}\n"
 	docker-compose -f $(COMPOSE_FILE) up -d
-	@printf "${GREEN}✓ Containers started${RESET}\n"
+	@printf "${GREEN}✔ Containers started${RESET}\n"
 
 down:
 	@printf "${YELLOW}■ Stopping containers...${RESET}\n"
 	docker-compose -f $(COMPOSE_FILE) down
-	@printf "${YELLOW}✓ Containers stopped${RESET}\n"
+	@printf "${YELLOW}✔ Containers stopped${RESET}\n"
 
 restart:
 	@printf "${CYAN}↻ Restarting containers...${RESET}\n"
 	docker-compose -f $(COMPOSE_FILE) restart
-	@printf "${CYAN}✓ Containers restarted${RESET}\n"
+	@printf "${CYAN}✔ Containers restarted${RESET}\n"
 
 logs:
 	@printf "${BLUE}▼ Showing live logs for $(SERVICE)...${RESET}\n"
@@ -65,13 +65,13 @@ clean:
 	@printf "${RED}⚠ WARNING: Hard cleaning all Docker resources...${RESET}\n"
 	docker-compose -f $(COMPOSE_FILE) down -v --rmi all
 	docker system prune -af
-	@printf "${RED}✓ All Docker resources cleaned${RESET}\n"
+	@printf "${RED}✔ All Docker resources cleaned${RESET}\n"
 	@printf "${YELLOW}Note: You'll need to rebuild and run migrations after this${RESET}\n"
 
 prune:
 	@printf "${MAGENTA}♻ Pruning unused Docker resources...${RESET}\n"
 	docker system prune -f
-	@printf "${MAGENTA}✓ Unused resources pruned${RESET}\n"
+	@printf "${MAGENTA}✔ Unused resources pruned${RESET}\n"
 
 status:
 	@printf "${CYAN}■ Container status:${RESET}\n"

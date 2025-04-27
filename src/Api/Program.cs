@@ -6,6 +6,11 @@ using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +39,43 @@ builder.Host.UseSerilog((ctx, lc) => lc
 builder.WebHost.ConfigureKestrel(opts => {
     opts.ListenAnyIP(443);
 });
+
+
+
+
+
+var jwtSecret = builder.Configuration["Jwt:Secret"] ?? 
+    throw new ArgumentNullException("Jwt:Secret não configurado");
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ??
+    throw new ArgumentNullException("Jwt:Issuer não configurado");
+var jwtAudience = builder.Configuration["Jwt:Audience"] ??
+    throw new ArgumentNullException("Jwt:Audience não configurado");
+var jwtExpiryInMinutes = builder.Configuration.GetValue<int>("Jwt:ExpiryInMinutes", 60);
+
+var key = Encoding.ASCII.GetBytes(jwtSecret);
+
+// 2. Registra o serviço de autenticação JWT
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false; // ajuste para true em produção
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtIssuer,
+            ValidateAudience = true,
+            ValidAudience = jwtAudience,
+            ValidateLifetime = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuerSigningKey = true,
+            ClockSkew = TimeSpan.Zero // Remove default 5-minute tolerance
+        };
+    });
+
+// 3. Adiciona autorização
+builder.Services.AddAuthorization();
 
 /*─────────────────────────────  Services  ───────────────────────────*/
 builder.Services.AddControllers();
