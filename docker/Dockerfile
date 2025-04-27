@@ -25,7 +25,7 @@ LABEL org.opencontainers.image.description="ECommerce system API built with .NET
 LABEL org.opencontainers.image.version="1.0.0"
 LABEL maintainer="youremail@example.com"
 
-# ──────────────── arquivos e portas ────────────────
+# ──────────────── files and ports ────────────────
 COPY --from=build /app/publish ./
 EXPOSE 80
 EXPOSE 443

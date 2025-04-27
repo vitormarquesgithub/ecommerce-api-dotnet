@@ -1,11 +1,24 @@
+# ──────────────── Environment Variables ────────────────
 SHELL := /bin/bash
 COMPOSE_FILE := ./docker/docker-compose.yml
 SERVICE := api
 LOCALHOST := http://localhost:8080/swagger/index.html
 
+# ──────────────── Colors ────────────────
+BLUE := \x1b[34m
+GREEN := \x1b[32m
+YELLOW := \x1b[33m
+RED := \x1b[31m
+CYAN := \x1b[36m
+MAGENTA := \x1b[35m
+WHITE := \x1b[37m
+BRIGHT_WHITE := \x1b[97m
+DARK_GRAY := \x1b[38;5;238m
+RESET := \x1b[0m
+
 .PHONY: help build up down logs clean prune run migrate seed test format
 
-# ──────────────── Docker ────────────────
+# ──────────────── Docker Commands ────────────────
 run:
 	@printf "${BLUE}■ Building docker images...${RESET}\n"
 	docker-compose -f $(COMPOSE_FILE) up --build --force-recreate -d
@@ -78,15 +91,3 @@ help:
 	@printf "${CYAN}Database commands:${RESET}\n"
 	@printf "  migrate apply database migrations\n"
 	@printf "  seed    seed initial data\n\n"
-
-#Console colors
-BLUE := \x1b[34m
-GREEN := \x1b[32m
-YELLOW := \x1b[33m
-RED := \x1b[31m
-CYAN := \x1b[36m
-MAGENTA := \x1b[35m
-WHITE := \x1b[37m
-BRIGHT_WHITE := \x1b[97m
-DARK_GRAY := \x1b[38;5;238m
-RESET := \x1b[0m
