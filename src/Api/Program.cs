@@ -73,13 +73,13 @@ builder.Services.AddAuthentication(options => {
 
 builder.Services.AddAuthorization(opts => {
     opts.AddPolicy("Customer", policy =>
-        policy.RequireRole(Role.Customer.ToString(), Role.Manager.ToString(), Role.Admin.ToString()));
+        policy.RequireRole(Role.CUSTOMER.ToString(), Role.MANAGER.ToString(), Role.ADMIN.ToString()));
     
     opts.AddPolicy("ManageProducts", policy =>
-        policy.RequireRole(Role.Manager.ToString(), Role.Admin.ToString()));
+        policy.RequireRole(Role.MANAGER.ToString(), Role.ADMIN.ToString()));
 
     opts.AddPolicy("AdminOnly", policy =>
-        policy.RequireRole(Role.Admin.ToString()));
+        policy.RequireRole(Role.ADMIN.ToString()));
 });
 
 /*─────────────────────────────  Services  ───────────────────────────*/
@@ -103,6 +103,7 @@ builder.Services.AddCors(opts => {
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c => {
+    c.SchemaFilter<HideIdSchemaFilter>();
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "ECommerce API", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme {
         Name = "Authorization",

@@ -35,8 +35,6 @@ namespace ECommerce.Api.Controllers {
             if (existing != null)
                 return Conflict(new { message = "Username já está em uso." });
 
-            customer.Id = 0;
-
             customer.Password = BCrypt.Net.BCrypt.HashPassword(customer.Password);
 
             var created = await _customerRepository.AddCustomer(customer);
