@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "F0BDS3+EREg=",
+  "dgSpecHash": "nYqshFy1YsQ=",
   "success": true,
   "projectFilePath": "/home/vitormarques/Downloads/ECommerce/ECommerce.csproj",
   "expectedPackageFiles": [
@@ -8,6 +8,7 @@
     "/home/vitormarques/.nuget/packages/automapper.extensions.microsoft.dependencyinjection/12.0.1/automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",
     "/home/vitormarques/.nuget/packages/azure.core/1.38.0/azure.core.1.38.0.nupkg.sha512",
     "/home/vitormarques/.nuget/packages/azure.identity/1.11.4/azure.identity.1.11.4.nupkg.sha512",
+    "/home/vitormarques/.nuget/packages/bcrypt.net-next/4.0.3/bcrypt.net-next.4.0.3.nupkg.sha512",
     "/home/vitormarques/.nuget/packages/fluentvalidation/11.5.1/fluentvalidation.11.5.1.nupkg.sha512",
     "/home/vitormarques/.nuget/packages/fluentvalidation.aspnetcore/11.3.0/fluentvalidation.aspnetcore.11.3.0.nupkg.sha512",
     "/home/vitormarques/.nuget/packages/fluentvalidation.dependencyinjectionextensions/11.5.1/fluentvalidation.dependencyinjectionextensions.11.5.1.nupkg.sha512",

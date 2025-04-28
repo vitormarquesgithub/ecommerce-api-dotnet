@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using ECommerce.Domain.Entities;
+using ECommerce.Api.Models;
 
 namespace ECommerce.Infrastructure.Data;
 
@@ -9,4 +9,6 @@ public class ECommerceDbContext : DbContext
         : base(options) { }
 
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<Customer> Customers { get; set; } 
 }
+

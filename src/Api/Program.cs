@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
+using ECommerce.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,6 +75,17 @@ builder.Services
         };
     });
 
+builder.Services.AddAuthorization(options =>
+{
+    // Política para Admin
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    // Política para Manager ou Admin
+    options.AddPolicy("ManageProducts", policy => 
+        policy.RequireRole("Manager", "Admin"));
+    // Política para Customer
+    options.AddPolicy("CustomerOnly", policy => policy.RequireRole("Customer"));
+});
+
 // 3. Adiciona autorização
 builder.Services.AddAuthorization();
 
@@ -108,6 +120,8 @@ builder.Services.AddSwaggerGen(opts => {
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
 builder.Services.AddMediatR(typeof(Program).Assembly);
+
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 
 var app = builder.Build();
 
