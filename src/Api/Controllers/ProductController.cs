@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using ECommerce.Api.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ECommerce.Api.Controllers
 {
+    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class ProductsController : ControllerBase

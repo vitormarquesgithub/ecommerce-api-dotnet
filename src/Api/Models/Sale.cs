@@ -3,8 +3,8 @@ namespace ECommerce.Api.Models
     public class Sale
     {
         public int Id { get; set; }
-        public int CustumerId { get; set; }
-        public required Custumer Custumer { get; set; } 
+        public int CustomerId { get; set; }
+        public required Customer Customer { get; set; } 
         public DateTime Date { get; set; }
         public decimal Total { get; set; }
         public required List<ProductSale> Products { get; set; }

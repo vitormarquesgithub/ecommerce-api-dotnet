@@ -216,3 +216,6 @@
 /home/vitormarques/Downloads/ECommerce/bin/Debug/net8.0/Serilog.Settings.Configuration.dll
 /home/vitormarques/Downloads/ECommerce/bin/Debug/net8.0/Serilog.Sinks.Debug.dll
 /home/vitormarques/Downloads/ECommerce/bin/Debug/net8.0/Serilog.Sinks.File.dll
+/home/vitormarques/Downloads/ECommerce/obj/Debug/net8.0/ECommerce.sourcelink.json
+/home/vitormarques/Downloads/ECommerce/bin/Debug/net8.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+/home/vitormarques/Downloads/ECommerce/bin/Debug/net8.0/BCrypt.Net-Next.dll
