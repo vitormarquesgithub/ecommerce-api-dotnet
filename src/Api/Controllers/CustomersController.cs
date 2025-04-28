@@ -1,13 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using ECommerce.Api.Models;
-using Microsoft.AspNetCore.Authorization;
 using ECommerce.Infrastructure.Repositories;
 
-namespace ECommerce.Api.Controllers
-{
-    [AllowAnonymous]
-    [Route("api/[controller]")]
+namespace ECommerce.Api.Controllers {
     [ApiController]
+    [Route("api/[controller]")]
     public class CustomersController : ControllerBase {
         private readonly ICustomerRepository _customerRepository;
 
@@ -16,14 +13,37 @@ namespace ECommerce.Api.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Customer>> GetCustomers() {
-            return Ok(_customerRepository.GetAllCustomers());
+        public async Task<ActionResult<IEnumerable<Customer>>> GetCustomers() {
+            var list = await _customerRepository.GetAllCustomers();
+            return Ok(list);
+        }
+
+        [HttpGet("{id}", Name = "GetCustomerById")]
+        public async Task<ActionResult<Customer>> GetCustomerById(int id) {
+            var customer = await _customerRepository.GetCustomerById(id);
+            if (customer == null)
+                return NotFound();
+            return Ok(customer);
         }
 
         [HttpPost]
-        public ActionResult<Customer> AddCustomer(Customer customer) {
-            var addedCustomer = _customerRepository.AddCustomer(customer);
-            return CreatedAtAction(nameof(GetCustomers), new { id = addedCustomer.Id }, addedCustomer);
+        public async Task<ActionResult<Customer>> AddCustomer([FromBody] Customer customer) {
+            if (customer == null)
+                return BadRequest("Customer não pode ser nulo.");
+
+            var existing = await _customerRepository.GetCustomerByUsername(customer.Username);
+            if (existing != null)
+                return Conflict(new { message = "Username já está em uso." });
+
+            customer.Id = 0;
+
+            customer.Password = BCrypt.Net.BCrypt.HashPassword(customer.Password);
+
+            var created = await _customerRepository.AddCustomer(customer);
+            return CreatedAtRoute(
+                "GetCustomerById",
+                new { id = created.Id },
+                created);
         }
     }
 }

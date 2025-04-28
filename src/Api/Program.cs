@@ -6,12 +6,13 @@ using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
 using MediatR;
+using System.Text;
+using ECommerce.Infrastructure.Repositories;
+using ECommerce.Api.Enums;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
-using ECommerce.Infrastructure.Repositories;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,53 +42,45 @@ builder.WebHost.ConfigureKestrel(opts => {
     opts.ListenAnyIP(443);
 });
 
+/*────────────────────────────────  JWT  ────────────────────────────*/
+var jwtSection = builder.Configuration.GetSection("Jwt");
+var secret   = jwtSection["Secret"]   ?? throw new ArgumentNullException("Jwt:Secret");
+var issuer   = jwtSection["Issuer"]   ?? throw new ArgumentNullException("Jwt:Issuer");
+var audience = jwtSection["Audience"] ?? throw new ArgumentNullException("Jwt:Audience");
+var expiry   = jwtSection.GetValue<int>("ExpiryInMinutes", 60);
 
+var keyBytes = Encoding.UTF8.GetBytes(secret);
 
-
-
-var jwtSecret = builder.Configuration["Jwt:Secret"] ?? 
-    throw new ArgumentNullException("Jwt:Secret não configurado");
-var jwtIssuer = builder.Configuration["Jwt:Issuer"] ??
-    throw new ArgumentNullException("Jwt:Issuer não configurado");
-var jwtAudience = builder.Configuration["Jwt:Audience"] ??
-    throw new ArgumentNullException("Jwt:Audience não configurado");
-var jwtExpiryInMinutes = builder.Configuration.GetValue<int>("Jwt:ExpiryInMinutes", 60);
-
-var key = Encoding.ASCII.GetBytes(jwtSecret);
-
-// 2. Registra o serviço de autenticação JWT
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+builder.Services.AddAuthentication(options => {
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme    = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options => {
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        options.RequireHttpsMetadata = false; // ajuste para true em produção
-        options.SaveToken = true;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = jwtIssuer,
-            ValidateAudience = true,
-            ValidAudience = jwtAudience,
-            ValidateLifetime = true,
-            IssuerSigningKey = new SymmetricSecurityKey(key),
-            ValidateIssuerSigningKey = true,
-            ClockSkew = TimeSpan.Zero // Remove default 5-minute tolerance
-        };
-    });
-
-builder.Services.AddAuthorization(options =>
-{
-    // Política para Admin
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-    // Política para Manager ou Admin
-    options.AddPolicy("ManageProducts", policy => 
-        policy.RequireRole("Manager", "Admin"));
-    // Política para Customer
-    options.AddPolicy("CustomerOnly", policy => policy.RequireRole("Customer"));
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey         = new SymmetricSecurityKey(keyBytes),
+        ValidateIssuer           = true,
+        ValidIssuer              = issuer,
+        ValidateAudience         = true,
+        ValidAudience            = audience,
+        ValidateLifetime         = true,
+        ClockSkew                = TimeSpan.Zero
+    };
 });
 
-// 3. Adiciona autorização
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(opts => {
+    opts.AddPolicy("Customer", policy =>
+        policy.RequireRole(Role.Customer.ToString(), Role.Manager.ToString(), Role.Admin.ToString()));
+    
+    opts.AddPolicy("ManageProducts", policy =>
+        policy.RequireRole(Role.Manager.ToString(), Role.Admin.ToString()));
+
+    opts.AddPolicy("AdminOnly", policy =>
+        policy.RequireRole(Role.Admin.ToString()));
+});
 
 /*─────────────────────────────  Services  ───────────────────────────*/
 builder.Services.AddControllers();
@@ -109,13 +102,38 @@ builder.Services.AddCors(opts => {
 });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(opts => {
-    opts.SwaggerDoc("v1", new OpenApiInfo {
-        Title = "ECommerce API",
-        Version = "v1",
-        Description = "API para gerenciamento de clientes, produtos e vendas"
+builder.Services.AddSwaggerGen(c => {
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "ECommerce API", Version = "v1" });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme {
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        Description = "JWT Authorization header using the Bearer scheme."
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
     });
 });
+
+builder.Services.AddControllers()
+    .AddJsonOptions(opts => {
+        opts.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+        opts.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+    });
+
 
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
@@ -177,6 +195,7 @@ app.UseSerilogRequestLogging(options => {
     options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
 });
 
+app.UseRouting();
 app.UseHttpsRedirection();
 app.UseCors("CorsPolicy");
 app.UseAuthentication();
@@ -188,6 +207,19 @@ using (var scope = app.Services.CreateScope()) {
     var db = scope.ServiceProvider.GetRequiredService<ECommerceDbContext>();
     db.Database.Migrate();
     Log.Information("Database migrations applied successfully");
+}
+
+
+/*───────────────────────────  Old Password Update ──────────────────────*/
+using (var scope = app.Services.CreateScope()) {
+    var context = scope.ServiceProvider.GetRequiredService<ECommerceDbContext>();
+
+    foreach (var customer in context.Customers) {
+        if (!customer.Password.StartsWith("$2")) {
+            customer.Password = BCrypt.Net.BCrypt.HashPassword(customer.Password);
+        }
+    }
+    context.SaveChanges();
 }
 
 app.Run();
