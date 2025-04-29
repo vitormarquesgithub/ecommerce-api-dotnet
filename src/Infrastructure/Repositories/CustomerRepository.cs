@@ -10,7 +10,7 @@ namespace ECommerce.Infrastructure.Repositories {
             _context = context;
         }
 
-        public async Task<Customer?> GetCustomerById(int id)
+        public async Task<Customer?> GetCustomerById(Guid id)
             => await _context.Customers.FindAsync(id);
 
         public async Task<IEnumerable<Customer>> GetAllCustomers()
