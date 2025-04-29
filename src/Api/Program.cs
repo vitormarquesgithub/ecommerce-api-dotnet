@@ -141,44 +141,9 @@ builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 builder.Services.AddMediatR(typeof(Program).Assembly);
 
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 var app = builder.Build();
-
-/*───────────────────────────  Logging Endpoint  ──────────────────────*/
-app.MapGet("/log-samples", () => {
-    Log.Verbose("Detailed trace information");
-    Log.Debug("Debug data for development");
-    Log.Information("API request processed");
-    Log.Warning("Potential configuration issue detected");
-    Log.Error("Failed to process request");
-    Log.Fatal("Critical system failure (simulated)");
-
-    Log.Information("System Status | Host: {HostName} | Memory: {MemoryUsage} MB | Threads: {ThreadCount}", 
-        Environment.MachineName, 
-        Math.Round(GC.GetTotalMemory(false) / 1024.0 / 1024.0, 2),
-        ThreadPool.ThreadCount);
-
-    try {
-        throw new InvalidOperationException("Simulated business rule violation") {
-            Data = { ["OrderId"] = 12345, ["UserId"] = "test-user" }
-        };
-    }
-    catch (Exception ex) {
-        Log.Error(ex, "Order processing failed | Order: {OrderId} | User: {UserId}",
-            ex.Data["OrderId"], 
-            ex.Data["UserId"]);
-    }
-
-    return Results.Ok(new {
-        Message = "Log samples generated successfully",
-        Instructions = "Check console output or log files",
-        LogFiles = new[] {
-            "logs/log-.txt (rolling daily)",
-            "logs/system-status.log"
-        },
-        TestTime = DateTime.UtcNow.ToString("O")
-    });
-});
 
 /*───────────────────────────  Middleware Pipeline  ──────────────────────*/
 if (app.Environment.IsDevelopment()) {

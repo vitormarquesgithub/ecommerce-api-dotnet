@@ -1,7 +1,5 @@
-namespace ECommerce.Api.Enums
-{
-    public enum Role
-    {
+namespace ECommerce.Api.Enums {
+    public enum Role {
         CUSTOMER,
         MANAGER,
         ADMIN

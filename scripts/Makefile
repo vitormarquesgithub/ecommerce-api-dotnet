@@ -19,6 +19,7 @@ RESET := \x1b[0m
 .PHONY: help build up down logs clean prune run migrate seed test format
 
 # ──────────────── Docker Commands ────────────────
+
 run:
 	@printf "${BLUE}■ Building docker images...${RESET}\n"
 	docker-compose -f $(COMPOSE_FILE) up --build --force-recreate -d
@@ -77,7 +78,23 @@ status:
 	@printf "${CYAN}■ Container status:${RESET}\n"
 	@docker-compose -f $(COMPOSE_FILE) ps
 
+# ──────────────── DB Migration ────────────────
+
+migration:
+	@printf "${CYAN}↻ Restarting migrations...${RESET}\n"
+	@printf "${YELLOW}■ Stopping containers...${RESET}\n"
+	docker-compose -f $(COMPOSE_FILE) down
+	@printf "${YELLOW}✔ Containers stopped${RESET}\n"
+	rm -rf ./src/Infrastructure/Migrations	
+	@printf "${YELLOW}✔ Old folder Migrations removed${RESET}\n"
+	docker volume rm docker_db-data
+	@printf "${YELLOW}✔ Docker volume removed${RESET}\n"
+	dotnet ef migrations add Initial --output-dir "src/Infrastructure/Migrations"
+	dotnet ef database update
+	@printf "${YELLOW}✔ Migration completed${RESET}\n"
+
 # ──────────────── Help ────────────────
+
 help:
 	@printf "${RESET}\n${MAGENTA}Usage: make -f scripts/Makefile <target>${RESET}\n"
 	@printf "\n${CYAN}Docker commands:${RESET}\n"
@@ -90,4 +107,3 @@ help:
 	@printf "  prune   prune unused docker resources\n\n"
 	@printf "${CYAN}Database commands:${RESET}\n"
 	@printf "  migrate apply database migrations\n"
-	@printf "  seed    seed initial data\n\n"
