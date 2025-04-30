@@ -13,7 +13,7 @@ namespace ECommerce.Api.Controllers {
     public class AuthController : ControllerBase {
         private readonly IConfiguration _config;
         private readonly ICustomerRepository _customerRepository;
-
+        
         public AuthController(IConfiguration config, ICustomerRepository customerRepository) {
             _config = config;
             _customerRepository = customerRepository;

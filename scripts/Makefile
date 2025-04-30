@@ -93,6 +93,12 @@ migration:
 	dotnet ef database update
 	@printf "${YELLOW}✔ Migration completed${RESET}\n"
 
+# ──────────────── Tests ────────────────
+
+test:
+	@printf "${BLUE}■ Start tests...${RESET}\n"
+	dotnet test tests/ECommerce.Tests.csproj
+
 # ──────────────── Help ────────────────
 
 help:
@@ -106,4 +112,6 @@ help:
 	@printf "  clean   stop containers and remove volumes\n"
 	@printf "  prune   prune unused docker resources\n\n"
 	@printf "${CYAN}Database commands:${RESET}\n"
-	@printf "  migrate apply database migrations\n"
+	@printf "  migrate apply database migrations\n\n"
+	@printf "${CYAN}Tests commands:${RESET}\n"
+	@printf "  tests apply unity tests\n"
