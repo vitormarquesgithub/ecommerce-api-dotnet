@@ -137,9 +137,7 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
-
 builder.Services.AddMediatR(typeof(Program).Assembly);
-
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ISaleRepository, SaleRepository>();
